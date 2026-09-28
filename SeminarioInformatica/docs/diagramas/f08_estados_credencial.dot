@@ -1,0 +1,26 @@
+digraph G {
+  graph [rankdir=TB, fontname="DejaVu Sans", fontsize=11, nodesep=0.5, ranksep=0.7, dpi=170, compound=true];
+  node [shape=box, style="rounded,filled", fillcolor="#EEF6F4", color="#16695A", penwidth=1.6, fontname="DejaVu Sans", fontsize=11];
+  edge [color="#2F4F4F", fontname="DejaVu Sans", fontsize=10, arrowsize=0.8];
+  ini [shape=circle, label="", width=0.22, style=filled, fillcolor=black];
+  fin [shape=doublecircle, label="", width=0.18, style=filled, fillcolor=black];
+  subgraph cluster_activa {
+    label="Activa"; style="rounded"; color="#16695A"; penwidth=1.6; fontname="DejaVu Sans Bold";
+    ini2 [shape=circle, label="", width=0.18, style=filled, fillcolor=black];
+    Pendiente; Vigente; Vencida;
+    ini2 -> Pendiente [label="[ahora < vigenciaDesde]"];
+    ini2 -> Vigente [label="[dentro de la vigencia]"];
+    Pendiente -> Vigente [label="llega vigenciaDesde"];
+    Vigente -> Vencida [label="llega vigenciaHasta"];
+    Vencida -> Vigente [label="modificarVigencia"];
+  }
+  Suspendida; Baja;
+  ini -> ini2 [lhead=cluster_activa, label="alta /\nregistrarVisita"];
+  Vigente -> Suspendida [ltail=cluster_activa, xlabel="suspender"];
+  Suspendida -> Pendiente [lhead=cluster_activa, xlabel="reactivar"];
+  Vencida -> Baja [ltail=cluster_activa, label="darDeBaja"];
+  Suspendida -> Baja [label="darDeBaja"];
+  Baja -> fin;
+  nota [shape=note, fillcolor="#FFF8E1", color="#C9A227", fontsize=10, label="Baja lógica: la credencial se conserva\npara mantener la trazabilidad de sus eventos.\nSolo en «Vigente» evaluar() puede autorizar."];
+  Baja -> nota [style=dashed, arrowhead=none, color="#C9A227"];
+}

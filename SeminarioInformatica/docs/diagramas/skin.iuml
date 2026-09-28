@@ -1,0 +1,74 @@
+skinparam dpi 170
+skinparam defaultFontName "DejaVu Sans"
+skinparam defaultFontSize 11
+skinparam shadowing false
+skinparam roundcorner 6
+skinparam ArrowColor #2F4F4F
+skinparam BorderColor #16695A
+skinparam BackgroundColor white
+skinparam class {
+  BackgroundColor #EEF6F4
+  BorderColor #16695A
+  HeaderBackgroundColor #D5ECE7
+  AttributeFontSize 10
+}
+skinparam usecase {
+  BackgroundColor #EEF6F4
+  BorderColor #16695A
+}
+skinparam actor {
+  BorderColor #16695A
+  BackgroundColor #EEF6F4
+}
+skinparam package {
+  BorderColor #16695A
+  BackgroundColor #FAFDFC
+}
+skinparam rectangle {
+  BorderColor #16695A
+}
+skinparam sequence {
+  ParticipantBackgroundColor #EEF6F4
+  ParticipantBorderColor #16695A
+  LifeLineBorderColor #7FA9A0
+  ActorBackgroundColor #EEF6F4
+  ActorBorderColor #16695A
+  BoxBorderColor #16695A
+}
+skinparam state {
+  BackgroundColor #EEF6F4
+  BorderColor #16695A
+}
+skinparam activity {
+  BackgroundColor #EEF6F4
+  BorderColor #16695A
+  DiamondBackgroundColor #D5ECE7
+}
+skinparam node {
+  BackgroundColor #EEF6F4
+  BorderColor #16695A
+}
+skinparam component {
+  BackgroundColor #EEF6F4
+  BorderColor #16695A
+}
+skinparam database {
+  BackgroundColor #D5ECE7
+  BorderColor #16695A
+}
+skinparam note {
+  BackgroundColor #FFF8E1
+  BorderColor #C9A227
+}
+skinparam object {
+  BackgroundColor #EEF6F4
+  BorderColor #16695A
+}
+skinparam artifact {
+  BackgroundColor #FFFFFF
+  BorderColor #16695A
+}
+skinparam cloud {
+  BackgroundColor #FAFDFC
+  BorderColor #16695A
+}

@@ -1,0 +1,42 @@
+@startuml
+!include skin.iuml
+autonumber
+actor "Operador de\nSeguridad" as OP
+participant ":VistaConsola" as V
+participant ":ControladorVisitas" as CV
+participant ":PersonaDAO" as PD
+participant ":PuntoAccesoDAO" as PA
+participant ":CredencialDAO" as CD
+participant ":VisitaDAO" as VD
+database "MySQL" as DB
+OP -> V : ingresa datos del visitante,\ncomplejo, anfitrión y duración
+activate V
+V -> CV : registrarVisita(operador, dni, ..., horas)
+activate CV
+alt horas fuera de 1..12
+  CV --> V : IllegalArgumentException
+  V --> OP : mensaje de error
+else datos válidos
+  note over CV, DB : Pasos 5 a 18 dentro de Transaccion.ejecutar(): si alguno falla se hace rollback de todos
+  CV -> PD : buscarPorDni(con, dni)
+  PD -> DB : SELECT persona
+  opt no existe
+    CV -> PD : insertar(con, visitante [rol VISITANTE])
+    PD -> DB : INSERT persona
+  end
+  CV -> PA : puntosActivosDeComplejo(con, idComplejo)
+  PA -> DB : SELECT punto_acceso
+  CV -> CV : codigo = Seguridad.generarCodigoQr()
+  CV -> CD : insertar(con, credencial QR temporal)
+  CD -> DB : INSERT credencial
+  CV -> CD : habilitarPuntos(con, idCred, puntos)
+  CD -> DB : INSERT credencial_punto_acceso (batch)
+  CV -> VD : insertar(con, visita)
+  VD -> DB : INSERT visita
+  CV -> DB : commit()
+  CV --> V : credencial QR
+  deactivate CV
+  V --> OP : código QR y vencimiento
+end
+deactivate V
+@enduml

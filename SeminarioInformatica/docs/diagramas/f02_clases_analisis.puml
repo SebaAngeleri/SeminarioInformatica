@@ -1,0 +1,47 @@
+@startuml
+!include skin.iuml
+left to right direction
+hide empty members
+hide circle
+together {
+class "PantallaOperador" as B1 <<boundary>>
+class "InterfazControladorLocal" as B2 <<boundary>>
+class "PanelMonitoreo" as B3 <<boundary>>
+}
+together {
+class "GestorAccesos" as C1 <<control>>
+class "GestorVisitas" as C2 <<control>>
+class "GestorCredenciales" as C3 <<control>>
+class "GestorAlertas" as C4 <<control>>
+class "GestorConsultas" as C5 <<control>>
+}
+together {
+class Credencial <<entity>>
+class Persona <<entity>>
+class PuntoAcceso <<entity>>
+class EventoAcceso <<entity>>
+class LecturaSensor <<entity>>
+class Alerta <<entity>>
+class Visita <<entity>>
+}
+B2 -- C1
+B2 -- C4
+B1 -- C2
+B1 -- C3
+B1 -- C4
+B1 -- C5
+B3 -- C5
+B3 -- C4
+C1 -- Credencial
+C1 -- EventoAcceso
+C1 -- Alerta
+C2 -- Persona
+C2 -- Credencial
+C2 -- Visita
+C3 -- Credencial
+C3 -- Persona
+C4 -- LecturaSensor
+C4 -- Alerta
+C5 -- EventoAcceso
+C5 -- PuntoAcceso
+@enduml

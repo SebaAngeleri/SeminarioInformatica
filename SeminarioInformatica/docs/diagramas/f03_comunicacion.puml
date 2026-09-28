@@ -1,0 +1,17 @@
+@startuml
+!include skin.iuml
+left to right direction
+hide empty members
+hide circle
+object ":InterfazControladorLocal" as B <<boundary>>
+object ":GestorAccesos" as C <<control>>
+object ":Credencial" as E1 <<entity>>
+object ":PuntoAcceso" as E2 <<entity>>
+object ":EventoAcceso" as E3 <<entity>>
+object ":Alerta" as E4 <<entity>>
+B --> C : "1: autorizarAcceso(codigo, punto)"
+C --> E1 : "2: buscar(codigo)\n4: evaluar(ahora, habilitada)"
+C --> E2 : "3: estaHabilitada(credencial)"
+C --> E3 : "5: crear(punto, credencial, motivo)\n6: registrar()"
+C --> E4 : "7: [rechazado] crear(tipo, evento)\n8: registrar()"
+@enduml

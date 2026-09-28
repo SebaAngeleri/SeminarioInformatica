@@ -1,0 +1,25 @@
+@startuml
+!include skin.iuml
+autonumber
+participant "Lector\nRFID" as L
+participant "Controlador\nlocal" as C
+participant "Servidor SIGMA\n(API HTTPS)" as S
+database "MySQL" as DB
+C -> L : osdp_POLL (sondeo periódico)\n[RS-485, CRC-16, canal seguro AES-128]
+L --> C : osdp_RAW (código de la tarjeta)
+C -> S : POST /api/v1/lecturas  (JSON: uuid, punto, código, sentido, timestamp)\n[TLS 1.3 sobre TCP 443, token del dispositivo]
+S -> DB : transacción JDBC\n(evento + alerta) [TLS, TCP 3306]
+DB --> S : commit
+S --> C : 200 OK {resultado, motivo}
+C -> L : osdp_LED / osdp_BUZ y osdp_OUT (relé de cerradura)
+alt sin respuesta en 1,5 s o sin conexión
+  C -> C : decide con lista local cacheada\ny guarda la lectura en el buffer
+  ... al restablecerse la conexión ...
+  C -> S : POST /api/v1/lecturas/lote  (reenvío por uuid)
+  S --> C : 200 OK (duplicados ignorados)
+end
+loop cada 60 s
+  C -> S : POST /api/v1/heartbeat {punto, estado}
+  S -> DB : UPDATE punto_acceso.ultima_senal
+end
+@enduml

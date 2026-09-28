@@ -1,0 +1,36 @@
+@startuml
+!include skin.iuml
+left to right direction
+skinparam packageStyle rectangle
+actor "Operador de\nSeguridad" as OP
+actor "Administrador" as AD
+actor "Controlador local\n<<sistema>>" as CL
+actor "Temporizador\n<<sistema>>" as TM
+AD -|> OP
+rectangle "SIGMA - Gestión y monitoreo de accesos" {
+  usecase "CU11 Iniciar sesión" as CU11
+  usecase "CU02 Registrar acceso\ntemporal de visitante" as CU02
+  usecase "CU07 Consultar historial\nde accesos" as CU07
+  usecase "CU09 Gestionar alertas" as CU09
+  usecase "CU01 Gestionar credenciales" as CU01
+  usecase "CU10 Monitorear estado\nde puntos de acceso" as CU10
+  usecase "CU03 Autorizar acceso" as CU03
+  usecase "CU04 Verificar credencial" as CU04
+  usecase "CU05 Registrar evento\nde acceso" as CU05
+  usecase "CU08 Monitorear sensores\nde puerta" as CU08
+  usecase "CU06 Generar alerta" as CU06
+}
+OP --> CU11
+OP --> CU02
+OP --> CU07
+OP --> CU09
+AD --> CU01
+AD --> CU10
+CL --> CU03
+CL --> CU08
+CU08 <-- TM
+CU03 ..> CU04 : <<include>>
+CU03 ..> CU05 : <<include>>
+CU06 ..> CU05 : <<extend>>\n[acceso rechazado]
+CU06 ..> CU08 : <<extend>>\n[puerta forzada o\nabierta excedida]
+@enduml

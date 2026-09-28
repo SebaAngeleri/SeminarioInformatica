@@ -1,0 +1,29 @@
+@startuml
+!include skin.iuml
+node "Punto de acceso" <<dispositivo>> as PA {
+  node "Lector RFID/QR" as LEC
+  node "Contacto magnético" as SEN
+}
+node "Controlador local\n<<embebido Linux, 1 por locación>>" as CL {
+  artifact "sigma-agente.jar" as AGJ
+  database "buffer SQLite" as SQ
+}
+node "Switch PoE + Router 4G/fibra\n<<locación>>" as RT
+cloud "Internet\n(túnel VPN IPsec + TLS 1.3)" as NET
+node "Servidor central VigilPlus\n<<Ubuntu Server 24.04 LTS>>" as SRV {
+  node "JVM 17" {
+    artifact "sigma.jar\n(API + controladores)" as JAR
+  }
+  node "MySQL Server 8.0" as MY {
+    database "sigma" as DBS
+  }
+}
+node "Estación del operador\n<<PC / navegador>>" as PC
+LEC -- CL : RS-485 (OSDP v2)
+SEN -- CL : entrada digital
+CL -- RT : Ethernet 802.3\nVLAN 30
+RT -- NET
+NET -- SRV : HTTPS 443
+JAR -- DBS : JDBC / TCP 3306\n(localhost, TLS)
+PC -- SRV : HTTPS 443 /\nWSS (alertas)
+@enduml

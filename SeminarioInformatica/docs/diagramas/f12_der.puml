@@ -1,0 +1,140 @@
+@startuml
+!include skin.iuml
+hide circle
+skinparam linetype ortho
+skinparam class {
+  AttributeFontSize 9
+}
+entity complejo {
+  * id_complejo : INT <<PK>>
+  --
+  * nombre : VARCHAR(100) <<UQ>>
+  * direccion : VARCHAR(150)
+  * tipo : ENUM
+  * activo : BOOLEAN
+}
+entity punto_acceso {
+  * id_punto_acceso : INT <<PK>>
+  --
+  * id_complejo : INT <<FK>>
+  * identificador : VARCHAR(50)
+  * tipo_dispositivo : ENUM
+  * estado : ENUM
+  * tiempo_max_apertura_seg : SMALLINT
+  ultima_senal : DATETIME
+}
+entity sensor {
+  * id_sensor : INT <<PK>>
+  --
+  * id_punto_acceso : INT <<FK>>
+  * tipo : ENUM
+  ubicacion : VARCHAR(100)
+}
+entity rol {
+  * id_rol : TINYINT <<PK>>
+  --
+  * nombre : VARCHAR(30) <<UQ>>
+  descripcion : VARCHAR(120)
+}
+entity persona {
+  * id_persona : INT <<PK>>
+  --
+  * dni : VARCHAR(12) <<UQ>>
+  * nombre : VARCHAR(60)
+  * apellido : VARCHAR(60)
+  email : VARCHAR(100)
+  telefono : VARCHAR(20)
+  * id_rol : TINYINT <<FK>>
+  * activo : BOOLEAN
+}
+entity usuario {
+  * id_usuario : INT <<PK>>
+  --
+  * id_persona : INT <<FK,UQ>>
+  * username : VARCHAR(30) <<UQ>>
+  * password_hash : CHAR(64)
+  * perfil : ENUM
+  * activo : BOOLEAN
+}
+entity credencial {
+  * id_credencial : INT <<PK>>
+  --
+  * id_persona : INT <<FK>>
+  * codigo : VARCHAR(50) <<UQ>>
+  * tipo : ENUM
+  * vigencia_desde : DATETIME
+  * vigencia_hasta : DATETIME
+  * estado : ENUM
+  * temporal : BOOLEAN
+}
+entity credencial_punto_acceso {
+  * id_credencial : INT <<PK,FK>>
+  * id_punto_acceso : INT <<PK,FK>>
+}
+entity visita {
+  * id_visita : INT <<PK>>
+  --
+  * id_persona : INT <<FK>>
+  * id_credencial : INT <<FK,UQ>>
+  * id_complejo : INT <<FK>>
+  * id_usuario_registra : INT <<FK>>
+  * anfitrion : VARCHAR(100)
+  motivo : VARCHAR(150)
+  * fecha_registro : DATETIME
+}
+entity evento_acceso {
+  * id_evento : BIGINT <<PK>>
+  --
+  * id_punto_acceso : INT <<FK>>
+  id_credencial : INT <<FK>>
+  codigo_no_reconocido : VARCHAR(50)
+  * fecha_hora : DATETIME(3)
+  * sentido : ENUM
+  * resultado : ENUM
+  motivo_rechazo : VARCHAR(120)
+}
+entity evento_sensor {
+  * id_evento_sensor : BIGINT <<PK>>
+  --
+  * id_sensor : INT <<FK>>
+  * fecha_hora : DATETIME(3)
+  * estado_puerta : ENUM
+}
+entity tipo_alerta {
+  * id_tipo_alerta : TINYINT <<PK>>
+  --
+  * codigo : VARCHAR(30) <<UQ>>
+  * descripcion : VARCHAR(120)
+  * severidad : ENUM
+}
+entity alerta {
+  * id_alerta : BIGINT <<PK>>
+  --
+  * id_tipo_alerta : TINYINT <<FK>>
+  id_evento : BIGINT <<FK>>
+  id_evento_sensor : BIGINT <<FK>>
+  * fecha_hora : DATETIME(3)
+  * estado : ENUM
+  id_usuario_resuelve : INT <<FK>>
+  fecha_resolucion : DATETIME
+  observaciones : VARCHAR(255)
+}
+complejo ||--o{ punto_acceso
+punto_acceso ||--o{ sensor
+rol ||--o{ persona
+persona ||--o| usuario
+persona ||--o{ credencial
+credencial ||--o{ credencial_punto_acceso
+punto_acceso ||--o{ credencial_punto_acceso
+persona ||--o{ visita
+credencial ||--o| visita
+complejo ||--o{ visita
+usuario ||--o{ visita
+punto_acceso ||--o{ evento_acceso
+credencial |o--o{ evento_acceso
+sensor ||--o{ evento_sensor
+tipo_alerta ||--o{ alerta
+evento_acceso |o--o{ alerta
+evento_sensor |o--o{ alerta
+usuario |o--o{ alerta
+@enduml
