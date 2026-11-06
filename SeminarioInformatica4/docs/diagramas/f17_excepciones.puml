@@ -1,0 +1,40 @@
+@startuml
+!include skin.iuml
+skinparam classAttributeIconSize 0
+hide empty members
+
+class Exception <<java.lang>>
+class SQLException <<java.sql>>
+class IOException <<java.io>>
+
+package "excepcion" {
+  class SigmaException
+  class PersistenciaException {
+    - tipo : Tipo
+    + {static} desde(e : SQLException) : PersistenciaException
+    + esFatal() : boolean
+  }
+  enum Tipo {
+    CONEXION
+    CREDENCIALES_BD
+    DUPLICADO
+    INTEGRIDAD
+    BLOQUEO
+    OTRO
+  }
+  class DatoInvalidoException
+  class PermisoDenegadoException
+  class ArchivoException
+}
+
+Exception <|-- SigmaException
+Exception <|-- SQLException
+Exception <|-- IOException
+SigmaException <|-- PersistenciaException
+SigmaException <|-- DatoInvalidoException
+SigmaException <|-- PermisoDenegadoException
+SigmaException <|-- ArchivoException
+PersistenciaException +-- Tipo
+PersistenciaException o..> SQLException : causa
+ArchivoException o..> IOException : causa
+@enduml

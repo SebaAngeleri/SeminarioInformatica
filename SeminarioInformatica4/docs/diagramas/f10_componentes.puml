@@ -1,0 +1,30 @@
+@startuml
+!include skin.iuml
+skinparam componentStyle uml2
+top to bottom direction
+package "Controlador local (uno por locación)" {
+  [Agente de lectura\nRFID/QR] as AG
+  [Monitor de sensores\nde puerta] as MS
+  [Buffer local\n(store & forward)] as BUF
+}
+package "Servidor central SIGMA (sigma.jar)" {
+  [API REST de eventos] as API
+  [Vista / Panel de monitoreo] as VIS
+  [Temporizador] as TMR
+  [Controladores] as CTRL
+  [Modelo de dominio] as MOD
+  [Persistencia (DAO)] as DAO
+}
+database "MySQL 8\n(base sigma)" as DB
+AG ..> BUF : sin conexión
+MS ..> BUF
+AG --> API : <<IEventos>>\nHTTPS/JSON
+MS --> API : <<IEventos>>
+API --> CTRL
+VIS --> CTRL : <<IConsultas>>
+TMR --> CTRL : verificarPuertasAbiertas()
+CTRL --> MOD
+CTRL --> DAO
+DAO --> DB : <<JDBC>>
+note right of API : En el prototipo del TP2 la API\nse simula con Main (argumentos)\ny la vista con VistaConsola.
+@enduml

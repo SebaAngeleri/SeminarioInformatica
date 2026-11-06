@@ -1,0 +1,83 @@
+@startuml
+!include skin.iuml
+skinparam classAttributeIconSize 0
+hide empty members
+
+package "modelo.regla" {
+  abstract class ReglaAcceso {
+    - nombre : String
+    # {abstract} cumple(c : Credencial, ctx : ContextoAcceso) : boolean
+    + {abstract} motivoRechazo() : MotivoRechazo
+    + evaluar(c : Credencial, ctx : ContextoAcceso) : MotivoRechazo
+  }
+  class ReglaEstadoActivo
+  class ReglaVigencia
+  class ReglaPuntoHabilitado
+  class ContextoAcceso <<record>> {
+    momento : LocalDateTime
+    habilitadaParaPunto : boolean
+  }
+}
+
+package "modelo" {
+  class Credencial {
+    - {static} REGLAS : ReglaAcceso[]
+    + evaluar(momento, habilitada) : MotivoRechazo
+    # reglas() : ReglaAcceso[]
+  }
+  interface Exportable <<interface>> {
+    + encabezados() : String[]
+    + valores() : String[]
+  }
+  class RegistroHistorial <<record>>
+  class Alerta <<record>>
+  class EntradaPadron <<record>> {
+    puntos : int[]
+    + habilitadaEn(idPunto) : boolean
+    + comoCredencial() : Credencial
+    + {static} desdeCampos(campos : String[], linea) : EntradaPadron
+  }
+  class PadronLocal {
+    - entradas : EntradaPadron[]
+    + buscar(codigo) : EntradaPadron
+    + verificar(codigo, idPunto, momento) : MotivoRechazo
+  }
+}
+
+package "util" {
+  class ArchivoCsv <<utility>> {
+    + {static} escribir(ruta, filas : List<? extends Exportable>) : int
+    + {static} leer(ruta) : List<String[]>
+  }
+  class Algoritmos <<utility>> {
+    + {static} ordenarPorInsercion(arreglo : T[], criterio)
+    + {static} buscarSecuencial(lista : List<T>, condicion) : T
+  }
+}
+
+package "reporte" {
+  class ResumenAlertas {
+    - porSeveridad : int[]
+    - ranking : ConteoComplejo[]
+    + cantidad(s : Severidad) : int
+    + total() : int
+  }
+}
+
+ReglaAcceso <|-- ReglaEstadoActivo
+ReglaAcceso <|-- ReglaVigencia
+ReglaAcceso <|-- ReglaPuntoHabilitado
+Credencial o--> "3" ReglaAcceso : REGLAS
+ReglaAcceso ..> ContextoAcceso
+
+Exportable <|.. RegistroHistorial
+Exportable <|.. Alerta
+Exportable <|.. EntradaPadron
+ArchivoCsv ..> Exportable
+
+PadronLocal o--> "*" EntradaPadron
+EntradaPadron ..> Credencial : reutiliza reglas
+PadronLocal ..> Algoritmos : ordena
+ResumenAlertas ..> Alerta
+ResumenAlertas ..> Algoritmos
+@enduml

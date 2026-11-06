@@ -1,0 +1,29 @@
+digraph G {
+  graph [rankdir=TB, fontname="DejaVu Sans", fontsize=10, dpi=170, nodesep=0.35, ranksep=0.6];
+  node [shape=box, style="rounded,filled", fillcolor="#EEF6F4", color="#16695A", penwidth=1.5, fontname="DejaVu Sans", fontsize=10];
+  edge [color="#2F4F4F", fontname="DejaVu Sans", fontsize=9, arrowhead=none];
+  subgraph cluster_loc {
+    label="Locación (ej. Torre Libertador) - red 10.1.0.0/16"; style=rounded; color="#16695A"; fontname="DejaVu Sans Bold";
+    l1 [label="Lector RFID\nPuerta Principal"]; l2 [label="Lector RFID\nMolinete"]; s1 [label="Contactos\nmagnéticos"];
+    ctl [label="Controlador local\n10.1.30.10 (VLAN 30)"];
+    sw [label="Switch PoE gestionable\n802.1Q / 802.3af"];
+    ups [label="UPS 4 h", fillcolor="#FFF8E1", color="#C9A227"];
+    rt [label="Router / firewall\nWAN1 fibra - WAN2 4G LTE"];
+    l1 -> ctl [label="RS-485\nOSDP"]; l2 -> ctl [label="RS-485"]; s1 -> ctl [label="E/S digital"];
+    ctl -> sw [label="UTP Cat6\n1000BASE-T"]; sw -> rt [label="trunk 802.1Q"];
+    ups -> sw [style=dashed, color="#C9A227"]; ups -> rt [style=dashed, color="#C9A227"];
+  }
+  inet [shape=ellipse, label="Internet", fillcolor="#FAFDFC"];
+  rt -> inet [label="túnel IPsec\n(IKEv2)"];
+  subgraph cluster_dc {
+    label="Sitio central VigilPlus - 10.0.0.0/16"; style=rounded; color="#16695A"; fontname="DejaVu Sans Bold";
+    fw [label="Firewall / concentrador VPN"];
+    srv [label="Servidor SIGMA 10.0.10.5\nJava 17 + MySQL 8\n(HTTPS 443 / 3306 solo local)"];
+    bk [label="Servidor de respaldo\n(réplica MySQL)"];
+    ops [label="Estaciones de operadores\n(VLAN 20)"];
+    fw -> srv [label="DMZ"]; srv -> bk [label="replicación\nTLS"]; ops -> fw [label="HTTPS / WSS"];
+  }
+  inet -> fw;
+  loc2 [label="Otras locaciones\n10.2.0.0/16 ... 10.N.0.0/16", style="rounded,dashed", fillcolor="#FAFDFC"];
+  loc2 -> inet [label="IPsec", style=dashed];
+}

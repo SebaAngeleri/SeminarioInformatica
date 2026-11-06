@@ -1,0 +1,51 @@
+@startuml
+!include skin.iuml
+autonumber
+participant "Controlador local\n(lector RFID/QR)" as CL
+participant ":ControladorAcceso" as CA
+participant ":Transaccion" as TX
+participant ":CredencialDAO" as CD
+participant "credencial\n:Credencial" as C
+participant ":EventoAccesoDAO" as ED
+participant ":AlertaDAO" as AD
+database "MySQL" as DB
+CL -> CA : autorizarAcceso(codigo, idPunto, sentido)
+activate CA
+CA -> TX : ejecutar(bloque)
+activate TX
+TX -> DB : setAutoCommit(false)
+TX -> CA : bloque.ejecutar(con)
+activate CA #D5ECE7
+CA -> CD : buscarPorCodigo(con, codigo)
+activate CD
+CD -> DB : SELECT ... FROM credencial WHERE codigo = ?
+CD --> CA : credencial | null
+deactivate CD
+alt credencial == null
+  CA -> CA : evento = EventoAcceso.deCodigoDesconocido(...)
+else credencial encontrada
+  CA -> CD : estaHabilitadaParaPunto(con, idCred, idPunto)
+  CD -> DB : SELECT 1 FROM credencial_punto_acceso ...
+  CD --> CA : habilitada
+  CA -> C : evaluar(ahora, habilitada)
+  activate C
+  C --> CA : motivo (null = autorizado)
+  deactivate C
+  CA -> CA : evento = EventoAcceso.deCredencial(...)
+end
+CA -> ED : registrar(con, evento)
+ED -> DB : INSERT INTO evento_acceso
+ED --> CA : idEvento
+opt evento rechazado
+  CA -> AD : generarPorEvento(con, motivo.codigoAlerta, idEvento, ahora)
+  AD -> DB : INSERT INTO alerta
+end
+CA --> TX : ResultadoAcceso
+deactivate CA
+TX -> DB : commit()  (rollback() ante error)
+TX --> CA : ResultadoAcceso
+deactivate TX
+CA --> CL : ResultadoAcceso (AUTORIZADO / RECHAZADO + motivo)
+deactivate CA
+note over CL : AUTORIZADO: libera el cerrojo\nRECHAZADO: indicación visual y sonora
+@enduml

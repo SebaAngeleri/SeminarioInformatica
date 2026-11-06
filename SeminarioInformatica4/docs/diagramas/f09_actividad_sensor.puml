@@ -1,0 +1,31 @@
+@startuml
+!include skin.iuml
+|Controlador local|
+start
+:Detectar cambio en el\ncontacto magnético;
+:Enviar lectura (idSensor, estado);
+|SIGMA (ControladorAlertas)|
+:Registrar evento_sensor;
+if (¿estado = ABIERTA?) then (sí)
+  if (¿hubo acceso AUTORIZADO en el\npunto en los últimos 10 s?) then (sí)
+    :Apertura legítima;
+  else (no)
+    :Generar alerta\nPUERTA_FORZADA (ALTA);
+  endif
+else (no)
+  :Puerta cerrada;
+endif
+stop
+|Temporizador|
+start
+:Cada 5 s: verificarPuertasAbiertas();
+|SIGMA (ControladorAlertas)|
+:Buscar sensores cuya última lectura es\nABIERTA y supera tiempo_max_apertura;
+while (¿quedan aperturas excedidas?) is (sí)
+  if (¿ya existe alerta PUERTA_ABIERTA\npara esa lectura?) then (no)
+    :Generar alerta PUERTA_ABIERTA (MEDIA);
+  else (sí)
+  endif
+endwhile (no)
+stop
+@enduml

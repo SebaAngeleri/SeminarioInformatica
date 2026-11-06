@@ -1,0 +1,30 @@
+@startuml
+!include skin.iuml
+skinparam packageStyle rectangle
+left to right direction
+package vista
+package controlador
+package modelo
+package "modelo.regla" as regla
+package reporte
+package persistencia
+package excepcion
+package util
+database MySQL
+
+vista ..> controlador
+vista ..> modelo
+vista ..> reporte
+controlador ..> modelo
+controlador ..> persistencia
+controlador ..> reporte
+controlador ..> util
+modelo ..> regla
+reporte ..> modelo
+persistencia ..> modelo
+persistencia ..> MySQL : JDBC
+vista ..> excepcion
+controlador ..> excepcion
+persistencia ..> excepcion
+util ..> excepcion
+@enduml

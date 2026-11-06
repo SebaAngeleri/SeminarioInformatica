@@ -1,0 +1,28 @@
+@startuml
+!include skin.iuml
+autonumber
+actor Operador
+participant VistaConsola as V
+participant ControladorCredenciales as C
+participant Transaccion as T
+participant CredencialDAO as D
+database MySQL as BD
+
+Operador -> V : alta de credencial
+V -> C : alta(usuario, dni, codigo, ...)
+C -> T : ejecutar(bloque)
+T -> BD : getConnection(); setAutoCommit(false)
+T -> D : insertar(con, credencial)
+D -> BD : INSERT INTO credencial ...
+BD --> D : SQLException (1062, codigo duplicado)
+D --> T : SQLException
+T -> BD : rollback()
+T -> T : PersistenciaException.desde(e)\ntipo = DUPLICADO
+T --> C : PersistenciaException
+C --> V : PersistenciaException
+alt esFatal() (sin conexion o sin permisos)
+  V --> Operador : mensaje y fin de la sesion
+else error recuperable
+  V --> Operador : "Ya existe un registro con ese dato..."\ny vuelve al menu
+end
+@enduml

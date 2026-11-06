@@ -1,0 +1,66 @@
+@startuml
+!include skin.iuml
+allowmixing
+skinparam classAttributeIconSize 0
+hide empty members
+left to right direction
+package "persistencia" {
+  class Conexion <<utility>> {
+    - URL, USUARIO, CLAVE : String
+    + {static} obtener() : Connection
+  }
+  class Transaccion <<utility>> {
+    + {static} ejecutar(bloque) : T
+  }
+  class CredencialDAO {
+    + buscarPorCodigo(con, codigo) : Credencial
+    + estaHabilitadaParaPunto(con, idCred, idPunto) : boolean
+    + insertar(con, credencial) : int
+    + habilitarPuntos(con, idCred, puntos)
+    + cambiarEstado(con, codigo, estado) : int
+    + revocarPunto(con, codigo, idPunto) : int
+  }
+  class EventoAccesoDAO {
+    + registrar(con, evento) : long
+    + historial(con, dni, idComplejo, desde, hasta)
+    + huboAccesoAutorizadoReciente(con, idPunto, t, seg) : boolean
+  }
+  class AlertaDAO {
+    + generarPorEvento(con, tipo, idEvento, fecha) : long
+    + generarPorSensor(con, tipo, idLectura, fecha) : long
+    + listarPendientes(con) : List<Alerta>
+    + resolver(con, idAlerta, idUsuario, obs) : boolean
+  }
+  class SensorDAO {
+    + registrarLectura(con, idSensor, estado, fecha) : long
+    + aperturasExcedidas(con, ahora) : List
+  }
+  class PersonaDAO {
+    + buscarPorDni(con, dni) : Persona
+    + insertar(con, persona) : int
+  }
+  class PuntoAccesoDAO {
+    + listarEstado(con) : List<EstadoPunto>
+    + registrarSenal(con, idPunto)
+  }
+  class UsuarioDAO {
+    + autenticar(con, user, pass) : Usuario
+  }
+  class VisitaDAO {
+    + insertar(con, ...) : int
+  }
+}
+database "MySQL\n(sigma)" as DB
+interface "java.sql.Connection" as CON
+Transaccion ..> Conexion : obtiene
+Conexion ..> CON : <<crea>>
+Conexion ..> DB : JDBC
+CredencialDAO ..> CON
+EventoAccesoDAO ..> CON
+AlertaDAO ..> CON
+SensorDAO ..> CON
+PersonaDAO ..> CON
+PuntoAccesoDAO ..> CON
+UsuarioDAO ..> CON
+VisitaDAO ..> CON
+@enduml

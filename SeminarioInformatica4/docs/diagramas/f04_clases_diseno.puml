@@ -1,0 +1,97 @@
+@startuml
+!include skin.iuml
+skinparam classAttributeIconSize 0
+hide empty members
+package "vista" {
+  class VistaConsola {
+    - usuario : Usuario
+    + iniciar()
+    - login() : boolean
+  }
+}
+package "controlador" {
+  class ControladorAcceso {
+    + autorizarAcceso(codigo, idPunto, sentido) : ResultadoAcceso
+  }
+  class ControladorVisitas {
+    + registrarVisita(operador, dni, ..., horas) : Credencial
+  }
+  class ControladorCredenciales {
+    + alta(admin, dni, codigo, ...) : Credencial
+    + suspender(admin, codigo) : boolean
+    + darDeBaja(admin, codigo) : boolean
+    + revocarPunto(admin, codigo, idPunto) : boolean
+  }
+  class ControladorAlertas {
+    + procesarLecturaSensor(idSensor, estado) : boolean
+    + verificarPuertasAbiertas() : int
+    + resolver(usuario, idAlerta, obs) : boolean
+  }
+  class ControladorConsultas {
+    + iniciarSesion(user, pass) : Usuario
+    + historial(dni, idComplejo, desde, hasta)
+    + estadoPuntos() : List<EstadoPunto>
+  }
+}
+package "modelo" {
+  class Persona {
+    - dni : String
+    - nombre : String
+    - apellido : String
+    - rol : String
+  }
+  class Credencial {
+    - codigo : String
+    - tipo : Tipo
+    - vigenciaDesde : LocalDateTime
+    - vigenciaHasta : LocalDateTime
+    - estado : Estado
+    - temporal : boolean
+    + estaVigente(momento) : boolean
+    + evaluar(momento, habilitada) : MotivoRechazo
+  }
+  class EventoAcceso {
+    - idCredencial : Integer
+    - codigoNoReconocido : String
+    - fechaHora : LocalDateTime
+    - sentido : Sentido
+    - resultado : Resultado
+    + {static} deCredencial(...)
+    + {static} deCodigoDesconocido(...)
+  }
+  enum MotivoRechazo {
+    CREDENCIAL_INEXISTENTE
+    CREDENCIAL_NO_ACTIVA
+    CREDENCIAL_VENCIDA
+    PUNTO_NO_HABILITADO
+    + getCodigoAlerta() : String
+  }
+  class ResultadoAcceso <<record>> {
+    resultado : Resultado
+    motivo : MotivoRechazo
+    idEvento : long
+  }
+  class Usuario <<record>> {
+    idUsuario : int
+    username : String
+    perfil : Perfil
+  }
+}
+VistaConsola --> ControladorAcceso
+VistaConsola --> ControladorVisitas
+VistaConsola --> ControladorCredenciales
+VistaConsola --> ControladorAlertas
+VistaConsola --> ControladorConsultas
+ControladorAcceso ..> Credencial
+ControladorAcceso ..> EventoAcceso
+ControladorAcceso ..> ResultadoAcceso
+ControladorVisitas ..> Persona
+ControladorVisitas ..> Credencial
+ControladorCredenciales ..> Credencial
+ControladorConsultas ..> Usuario
+Persona "1" -- "0..*" Credencial : posee >
+Credencial "0..1" -- "0..*" EventoAcceso : genera >
+EventoAcceso --> "0..1" MotivoRechazo
+Credencial ..> MotivoRechazo
+ResultadoAcceso --> "0..1" MotivoRechazo
+@enduml

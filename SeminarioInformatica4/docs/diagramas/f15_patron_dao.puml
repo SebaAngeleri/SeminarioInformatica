@@ -1,0 +1,74 @@
+@startuml
+!include skin.iuml
+allowmixing
+skinparam classAttributeIconSize 0
+hide empty members
+left to right direction
+
+package "controlador" {
+  class ControladorAcceso
+  class ControladorReportes
+}
+
+package "persistencia" {
+  interface "Dao<T, K>" as Dao <<interface>> {
+    + buscarPorId(con, id : K) : T
+    + listarTodos(con) : List<T>
+  }
+  abstract class "DaoBase<T>" as DaoBase {
+    # {abstract} mapear(rs : ResultSet) : T
+    # consultarUno(con, sql, parametros : Object...) : T
+    # consultarLista(con, sql, parametros : Object...) : List<T>
+    # consultar(con, sql, mapeador, parametros : Object...) : List<R>
+    # existe(con, sql, parametros : Object...) : boolean
+    # actualizar(con, sql, parametros : Object...) : int
+    # insertar(con, sql, parametros : Object...) : long
+    - preparar(con, sql, claves, parametros : Object[]) : PreparedStatement
+  }
+  class CredencialDAO {
+    # mapear(rs) : Credencial
+    + buscarPorCodigo(con, codigo) : Credencial
+    + padronDeComplejo(con, idComplejo) : List<EntradaPadron>
+    + ...
+  }
+  class AlertaDAO {
+    # mapear(rs) : Alerta
+    + listarPendientes(con) : List<Alerta>
+    + ...
+  }
+  class "PersonaDAO, PuntoAccesoDAO,\nUsuarioDAO, VisitaDAO" as OtrosDao
+  class EventoAccesoDAO {
+    # mapear(rs) : RegistroHistorial
+    + registrar(con, evento) : long
+    + historial(con, dni, complejo, desde, hasta)
+  }
+  class SensorDAO {
+    # mapear(rs) : AperturaExcedida
+  }
+  class Transaccion <<utility>> {
+    + {static} ejecutar(bloque) : T
+    + {static} consultar(bloque) : T
+  }
+  class Conexion <<utility>> {
+    + {static} obtener() : Connection
+  }
+}
+
+database "MySQL\n(sigma)" as BD
+
+DaoBase <|-- CredencialDAO
+DaoBase <|-- AlertaDAO
+DaoBase <|-- OtrosDao
+DaoBase <|-- EventoAccesoDAO
+DaoBase <|-- SensorDAO
+Dao <|.. CredencialDAO
+Dao <|.. AlertaDAO
+Dao <|.. OtrosDao
+
+ControladorAcceso ..> Transaccion : abre transaccion
+ControladorAcceso --> CredencialDAO
+ControladorReportes --> AlertaDAO
+Transaccion ..> Conexion : obtiene
+Conexion ..> BD : JDBC
+
+@enduml
